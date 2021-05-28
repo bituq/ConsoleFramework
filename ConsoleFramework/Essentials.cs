@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ConsoleFramework.Structs;
+using ConsoleFramework.Data;
 using ConsoleFramework.Utils;
 
 namespace ConsoleFramework.Essentials
@@ -9,6 +9,7 @@ namespace ConsoleFramework.Essentials
     class Instance : ICacheImplementation<Cell>
     {
         protected Viewport viewport;
+        protected List<Cell> garbageCollector = new List<Cell>();
         protected List<Cell> cache = new List<Cell>();
 
         public Instance(Viewport Viewport)
@@ -32,7 +33,12 @@ namespace ConsoleFramework.Essentials
         public void ClearCache() => cache.Clear();
         public void RemoveFromCache(Cell cell) => cache.Remove(cell);
 
-        internal void PushToViewport() => viewport.PushRange(cache);
+        internal void AddToViewport()
+        {
+            viewport.AddRangeToCache(cache);
+            cache.RemoveAll(cell => garbageCollector.Contains(cell));
+            garbageCollector.Clear();
+        }
     }
 
     class Viewport : IStackImplementation<Cell>, ICacheImplementation<Cell>, ICacheStackAdapter
@@ -40,7 +46,6 @@ namespace ConsoleFramework.Essentials
         List<Instance> instances = new List<Instance>();
         List<Cell> cache = new List<Cell>();
         Stack<Cell> stack = new Stack<Cell>();
-
 
         public IReadOnlyList<Instance> Instances => instances;
         public int StackLength => stack.Count;
@@ -77,7 +82,7 @@ namespace ConsoleFramework.Essentials
         public void Draw()
         {
             InitializeInstances();
-            StackToCache();
+            CacheToStack();
             Cell cell;
             while (stack.TryPop(out cell))
                 cell.Draw();
@@ -86,7 +91,7 @@ namespace ConsoleFramework.Essentials
         void InitializeInstances()
         {
             foreach (Instance instance in instances)
-                instance.PushToViewport();
+                instance.AddToViewport();
         }
     }
 }

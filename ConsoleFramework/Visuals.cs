@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ConsoleFramework.Essentials;
-using ConsoleFramework.Structs;
+using ConsoleFramework.Data;
 
 namespace ConsoleFramework
 {
@@ -35,9 +35,50 @@ namespace ConsoleFramework
             set
             {
                 foreach (Cell cell in cache)
+                {
                     cell.Clean();
+                    garbageCollector.Add(cell);
+                }
                 for (int i = 0; i < value.Length; i++)
                     AddToCache(new Cell(value[i], x + i, y, foreground, background));
+                text = value;
+            }
+        }
+
+        public int X
+        {
+            get => x;
+            set
+            {
+                x = value;
+                Text = text;
+            }
+        }
+        public int Y
+        {
+            get => y;
+            set
+            {
+                y = value;
+                Text = text;
+            }
+        }
+        public ConsoleColor Foreground
+        {
+            get => foreground;
+            set
+            {
+                foreground = value;
+                Text = text;
+            }
+        }
+        public ConsoleColor Background
+        {
+            get => background;
+            set
+            {
+                background = value;
+                Text = text;
             }
         }
     }

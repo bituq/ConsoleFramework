@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ConsoleFramework.Structs
+namespace ConsoleFramework.Data
 {
-    struct Cell
+    class Cell
     {
         ConsoleColor defaultForeground => ConsoleColor.White;
         ConsoleColor defaultBackground => ConsoleColor.Black;
