@@ -1,4 +1,5 @@
 ﻿using System;
+using ConsoleFramework.Essentials;
 
 namespace ConsoleFramework
 {
@@ -6,7 +7,12 @@ namespace ConsoleFramework
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Viewport viewport = new Viewport();
+            TextInstance t = new TextInstance(viewport, "Hello, world!", 1, 1);
+            viewport.Draw();
+            t.Text = "How are you today?";
+            viewport.Draw();
+            Console.SetCursorPosition(0, 25);
         }
     }
 }
