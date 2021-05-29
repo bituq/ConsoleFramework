@@ -9,22 +9,17 @@ namespace ConsoleFramework
         static void Main(string[] args)
         {
             Viewport viewport = new Viewport();
-            List<TextInstance> instances = new List<TextInstance>();
-            for (int i = 0; i < 10; i++)
-            {
-                instances.Add(new TextInstance(viewport, "Instance " + i, 1, 1 + i));
-                viewport.Draw();
-            }
-            for (int i = 0; i < 10; i++)
-            {
-                instances.Add(new TextInstance(viewport, "abc " + i, 5, 1 + i));
-                viewport.Draw();
-            }
-            instances[0].Text = "";
+            List<TextList> a = new List<TextList>();
+            string[] t = new string[26];
+                for (int i = 0; i < t.Length; i++)
+                    t[i] = i.ToString();
+                a.Add(new TextList(viewport, t, 1, 1, ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Horizontal }));
             viewport.Draw();
-            instances[3].Text = "whoops";
+            var temp = new List<string>(a[0].Strings);
+            for (int i = 0; i < temp.Count; i++)
+                temp[i] = (char)(65 + i) + temp[i].ToString();
+            a[0].Strings = temp;
             viewport.Draw();
-            viewport.Clean();
             Console.SetCursorPosition(0, 25);
         }
     }

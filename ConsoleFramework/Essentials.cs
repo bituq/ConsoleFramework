@@ -84,6 +84,7 @@ namespace ConsoleFramework.Essentials
         public void RemoveFromCache(Cell cell) => cache.Remove(cell);
         public void StackToCache() => AddRangeToCache(stack);
         public void AddInstance(Instance instance) => instances.Add(instance);
+        public void RemoveInstance(Instance instance) => instances.Remove(instance);
 
         public void Draw()
         {

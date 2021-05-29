@@ -35,7 +35,7 @@ namespace ConsoleFramework.Data
 
         public void Draw()
         {
-            Console.SetCursorPosition(X, Y);
+            Console.SetCursorPosition(Math.Min(X, Console.BufferWidth - 1), Y);
             Console.ForegroundColor = Foreground;
             Console.BackgroundColor = Background;
             Console.Write(Character);
