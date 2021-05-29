@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ConsoleFramework.Essentials;
 
 namespace ConsoleFramework
@@ -8,10 +9,16 @@ namespace ConsoleFramework
         static void Main(string[] args)
         {
             Viewport viewport = new Viewport();
-            TextInstance t = new TextInstance(viewport, "How are you on this day?", 1, 1);
+            List<TextInstance> instances = new List<TextInstance>();
+            for (int i = 0; i < 10; i++)
+            {
+                instances.Add(new TextInstance(viewport, "Instance " + i, 1, 1 + i));
+                instances[i].Text = $"Instance {i + 1}";
+                viewport.Draw();
+            }
+            instances[0].Text = "";
             viewport.Draw();
-            t.Text = "instance1";
-            TextInstance b = new TextInstance(viewport, "instance2", 11, 1);
+            instances[3].Text = "whoops";
             viewport.Draw();
             Console.SetCursorPosition(0, 25);
         }

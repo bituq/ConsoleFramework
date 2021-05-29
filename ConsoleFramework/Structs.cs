@@ -31,6 +31,7 @@ namespace ConsoleFramework.Data
         public Char Character;
         public int X;
         public int Y;
+        public int MemoryLength = 0;
 
         public void Draw()
         {
@@ -45,8 +46,12 @@ namespace ConsoleFramework.Data
             Foreground = defaultForeground;
             Background = defaultBackground;
             Character = ' ';
+            MemoryLength = 0;
         }
 
         public bool PositionEquals(Cell cell) => X == cell.X && Y == cell.Y;
+        public static bool operator ==(Cell a, Cell b) => a.Foreground == b.Foreground && a.Background == b.Background && a.Character == b.Character && a.PositionEquals(b);
+        public static bool operator !=(Cell a, Cell b) => !(a == b);
+        public override string ToString() => Character.ToString();
     }
 }

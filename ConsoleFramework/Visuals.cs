@@ -81,5 +81,8 @@ namespace ConsoleFramework
                 Text = text;
             }
         }
+
+        public TextInstance Copy() => new TextInstance(viewport, Text, X, Y, Foreground, Background);
+        public TextInstance Copy(int x, int y) => new TextInstance(viewport, Text, x, y, Foreground, Background);
     }
 }

@@ -57,17 +57,21 @@ namespace ConsoleFramework.Essentials
         }
         public void AddToCache(Cell cell)
         {
-            if (cache.Exists(other => other.PositionEquals(cell)))
+            if (cache.Exists(other => other.PositionEquals(cell)) || !cache.Contains(cell))
                 RemoveFromCache(cache.Find(other => other.PositionEquals(cell)));
             cache.Add(cell);
         }
-        public void CacheToStack() => PushRange(cache);
+        public void CacheToStack()
+        {
+            PushRange(cache);
+            cache.ForEach(cell => cell.MemoryLength++);
+        }
         public void ClearCache() => cache.Clear();
         public void ClearStack() => stack.Clear();
         public Cell Peek() => stack.Peek();
         public void Push(Cell cell)
         {
-            if (!stack.Contains(cell))
+            if (!stack.Contains(cell) && cell.MemoryLength < 1)
                 stack.Push(cell);
         }
         public void PushRange(IEnumerable<Cell> range)
