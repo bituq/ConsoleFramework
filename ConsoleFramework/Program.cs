@@ -13,13 +13,18 @@ namespace ConsoleFramework
             for (int i = 0; i < 10; i++)
             {
                 instances.Add(new TextInstance(viewport, "Instance " + i, 1, 1 + i));
-                instances[i].Text = $"Instance {i + 1}";
+                viewport.Draw();
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                instances.Add(new TextInstance(viewport, "abc " + i, 5, 1 + i));
                 viewport.Draw();
             }
             instances[0].Text = "";
             viewport.Draw();
             instances[3].Text = "whoops";
             viewport.Draw();
+            viewport.Clean();
             Console.SetCursorPosition(0, 25);
         }
     }

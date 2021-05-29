@@ -28,7 +28,7 @@ namespace ConsoleFramework.Data
 
         public ConsoleColor Foreground;
         public ConsoleColor Background;
-        public Char Character;
+        public char Character;
         public int X;
         public int Y;
         public int MemoryLength = 0;

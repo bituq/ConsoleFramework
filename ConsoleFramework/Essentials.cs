@@ -36,6 +36,7 @@ namespace ConsoleFramework.Essentials
         internal void AddToViewport()
         {
             viewport.AddRangeToCache(cache);
+            viewport.garbageCollector.AddRange(garbageCollector);
             cache.RemoveAll(cell => garbageCollector.Contains(cell));
             garbageCollector.Clear();
         }
@@ -43,6 +44,7 @@ namespace ConsoleFramework.Essentials
 
     class Viewport : IStackImplementation<Cell>, ICacheImplementation<Cell>, ICacheStackAdapter
     {
+        internal List<Cell> garbageCollector = new List<Cell>();
         List<Instance> instances = new List<Instance>();
         List<Cell> cache = new List<Cell>();
         Stack<Cell> stack = new Stack<Cell>();
@@ -92,8 +94,16 @@ namespace ConsoleFramework.Essentials
                 cell.Draw();
         }
 
+        public void Clean()
+        {
+            cache.ForEach(cell => Push(new Cell(cell.X, cell.Y)));
+            Draw();
+        }
+
         void InitializeInstances()
         {
+            cache.RemoveAll(cell => garbageCollector.Contains(cell));
+            garbageCollector.Clear();
             foreach (Instance instance in instances)
                 instance.AddToViewport();
         }
