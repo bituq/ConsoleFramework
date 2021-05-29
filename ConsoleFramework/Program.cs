@@ -20,7 +20,13 @@ namespace ConsoleFramework
                 temp[i] = (char)(65 + i) + temp[i].ToString();
             a[0].Strings = temp;
             viewport.Draw();
-            Console.SetCursorPosition(0, 25);
+            a[0].Properties = new List<Enum> { Options.Direction.Vertical };
+            a[0].Spacing = 1;
+            viewport.Draw();
+            a[0].Background = ConsoleColor.Cyan;
+            a[0].Foreground = ConsoleColor.Black;
+            viewport.Draw();
+            Console.SetCursorPosition(0, 35);
         }
     }
 }
