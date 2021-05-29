@@ -96,7 +96,7 @@ namespace ConsoleFramework
         IReadOnlyList<T> Items { get; }
     }
 
-    partial class TextList : ICollection<TextInstance>
+    class TextList : ICollection<TextInstance>
     {
         List<Enum> properties;
         List<string> strings;
@@ -217,4 +217,6 @@ namespace ConsoleFramework
             len = 0;
         }
     }
+
+
 }
