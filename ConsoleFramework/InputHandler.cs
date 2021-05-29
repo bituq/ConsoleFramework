@@ -15,8 +15,8 @@ namespace ConsoleFramework.Essentials
         {
             new TextInstance(defaultDialog, $"There {(Viewports.Count is int c && c == 1 ? "is" : "are")} {c} viewport{(c == 1 ? "" : "s")}, {(c == 1 ? "which is the current one." : "and none are active:")}", 1, 1, ConsoleColor.White, ConsoleColor.Red);
             if (c == 1)
-                new TextInstance(defaultDialog, "You must add at least one viewport", 1, 2, ConsoleColor.Gray, ConsoleColor.Black);
-            for (int i = 0; i < Viewports.Count && Viewports[i] is Viewport viewport; i++)
+                new TextInstance(defaultDialog, "You must add at least one other viewport", 1, 2, ConsoleColor.Gray, ConsoleColor.Black);
+            for (int i = 0; i < c && Viewports[i] is Viewport viewport; i++)
             {
                 TextList viewportList = new TextList(defaultDialog, new string[] { $"Viewport {i + 1}:", $"{(viewport.Instances.Count is int count ? count : 0)} instance{(count == 1 ? "" : "s")}", viewport == defaultDialog ? "(this viewport)" : "" }, 1, 3 + i, ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Horizontal });
                 viewportList.Spacing = 2;
@@ -37,6 +37,8 @@ namespace ConsoleFramework.Essentials
                 activeViewport?.ActiveSelectable?.TryAction(Console.ReadKey().Key);
             }
             defaultDialog.Draw();
+            Console.SetCursorPosition(0, 3 + Viewports.Count);
+            Console.BackgroundColor = ConsoleColor.Black;
         }
     }
 }
