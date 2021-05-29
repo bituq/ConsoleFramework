@@ -222,6 +222,8 @@ namespace ConsoleFramework
     {
         public Dictionary<ConsoleKey, Action> KeyActionPairs = new Dictionary<ConsoleKey, Action>();
 
+        public bool Active = false;
+
         public bool TryAction(ConsoleKey Key)
         {
             Action action;

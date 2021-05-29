@@ -48,9 +48,15 @@ namespace ConsoleFramework.Essentials
         List<Instance> instances = new List<Instance>();
         List<Cell> cache = new List<Cell>();
         Stack<Cell> stack = new Stack<Cell>();
+        public List<List<Selectable>> SelectionOrder = new List<List<Selectable>>();
         internal bool Active = false;
-        public Selectable ActiveSelectable;
-
+        public Selectable ActiveSelectable
+        {
+            get
+            {
+                return SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)).Find(s => s.Active);
+            }
+        }
 
         public Viewport() => InputHandler.Viewports.Add(this);
         public Viewport(bool Active)
