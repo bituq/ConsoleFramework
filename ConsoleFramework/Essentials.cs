@@ -48,6 +48,16 @@ namespace ConsoleFramework.Essentials
         List<Instance> instances = new List<Instance>();
         List<Cell> cache = new List<Cell>();
         Stack<Cell> stack = new Stack<Cell>();
+        internal bool Active = false;
+        public Selectable ActiveSelectable;
+
+
+        public Viewport() => InputHandler.Viewports.Add(this);
+        public Viewport(bool Active)
+        {
+            this.Active = Active;
+            InputHandler.Viewports.Add(this);
+        }
 
         public IReadOnlyList<Instance> Instances => instances;
         public int StackLength => stack.Count;

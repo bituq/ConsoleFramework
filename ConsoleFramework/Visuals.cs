@@ -218,7 +218,7 @@ namespace ConsoleFramework
         }
     }
 
-    class SelectableText
+    class Selectable
     {
         public Dictionary<ConsoleKey, Action> KeyActionPairs = new Dictionary<ConsoleKey, Action>();
 
