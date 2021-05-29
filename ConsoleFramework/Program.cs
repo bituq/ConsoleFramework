@@ -27,6 +27,9 @@ namespace ConsoleFramework
             a[0].Foreground = ConsoleColor.Black;
             viewport.Draw();
             Console.SetCursorPosition(0, 35);
+            var _ = new SelectableText();
+            _.TryAction(ConsoleKey.Enter);
+            viewport.Draw();
         }
     }
 }

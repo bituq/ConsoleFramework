@@ -218,5 +218,16 @@ namespace ConsoleFramework
         }
     }
 
+    class SelectableText
+    {
+        public Dictionary<ConsoleKey, Action> KeyActionPairs = new Dictionary<ConsoleKey, Action>();
 
+        public bool TryAction(ConsoleKey Key)
+        {
+            Action action;
+            if(KeyActionPairs.TryGetValue(Key, out action))
+                action();
+            return action != null;
+        }
+    }
 }
