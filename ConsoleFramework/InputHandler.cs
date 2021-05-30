@@ -4,10 +4,9 @@ using System.Text;
 
 namespace ConsoleFramework.Essentials
 {
-    static class InputHandler
+    static partial class InputHandler
     {
         internal static List<Viewport> Viewports = new List<Viewport>();
-        public static List<Action> Initializers = new List<Action>();
         static Viewport defaultDialog = new Viewport();
 
 
@@ -23,11 +22,13 @@ namespace ConsoleFramework.Essentials
                 viewportList.Items[2].Foreground = ConsoleColor.DarkGray;
             }
         }
+
         static void Init()
         {
-            Initializers.Add(InitDefaultDialog);
-            Initializers.ForEach(init => init());
+            defaultDialog.Initializer();
+            Viewports.ForEach(viewport => viewport.Initializer());
         }
+
         public static void WaitForInput()
         {
             Init();

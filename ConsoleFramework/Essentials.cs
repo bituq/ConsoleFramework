@@ -54,10 +54,13 @@ namespace ConsoleFramework.Essentials
         {
             get
             {
-                return SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)).Find(s => s.Active);
+                if (SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<Selectable> exist)
+                    return exist.Find(selectable => selectable.Active);
+                return null;
             }
         }
 
+        public Action Initializer { get; set; }
         public Viewport() => InputHandler.Viewports.Add(this);
         public Viewport(bool Active)
         {
