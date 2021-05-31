@@ -6,9 +6,9 @@ namespace ConsoleFramework.Essentials
 {
     static partial class InputHandler
     {
+        public static List<Enum> Properties = new List<Enum>();
         internal static List<Viewport> Viewports = new List<Viewport>();
         static Viewport defaultDialog = new Viewport();
-
 
         static void InitDefaultDialog()
         {
@@ -25,17 +25,22 @@ namespace ConsoleFramework.Essentials
 
         static void Init()
         {
-            defaultDialog.Initializer();
+            defaultDialog.Initializer = InitDefaultDialog;
             Viewports.ForEach(viewport => viewport.Initializer());
         }
 
         public static void WaitForInput()
         {
-            Init();
+            Console.CursorVisible = false;
             while (Viewports.Find(v => v.Active) is Viewport activeViewport)
             {
+                if (!activeViewport.Initialized)
+                    activeViewport.Initializer();
+                foreach (Instance instance in activeViewport.Instances)
+                    instance.Update();
                 activeViewport.Draw();
-                activeViewport?.ActiveSelectable?.TryAction(Console.ReadKey().Key);
+                ConsoleKeyInfo Key = Console.ReadKey(true);
+                activeViewport?.ActiveSelectable?.TryAction(Key.Key);
             }
             defaultDialog.Draw();
             Console.SetCursorPosition(0, 3 + Viewports.Count);

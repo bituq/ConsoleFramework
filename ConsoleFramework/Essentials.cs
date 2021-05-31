@@ -18,6 +18,7 @@ namespace ConsoleFramework.Essentials
             viewport.AddInstance(this);
         }
 
+        public Action Update = () => { };
         public int CacheLength => cache.Count;
         public void AddRangeToCache(IEnumerable<Cell> range)
         {
@@ -48,19 +49,40 @@ namespace ConsoleFramework.Essentials
         List<Instance> instances = new List<Instance>();
         List<Cell> cache = new List<Cell>();
         Stack<Cell> stack = new Stack<Cell>();
-        public List<List<Selectable>> SelectionOrder = new List<List<Selectable>>();
-        internal bool Active = false;
-        public Selectable ActiveSelectable
+        public List<List<ISelectable>> SelectionOrder = new List<List<ISelectable>>();
+        bool active = false; 
+
+        public bool Active
+        {
+            get => active;
+            set
+            {
+                if (value && InputHandler.Viewports.Find(viewport => viewport.Active) is Viewport viewport)
+                    viewport.Active = false;
+                if (!value)
+                    Clean();
+                active = value;
+            }
+        }
+        void init()
+        {
+            initializer();
+            Initialized = true;
+        }
+        Action initializer = () => { };
+        public ISelectable ActiveSelectable
         {
             get
             {
-                if (SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<Selectable> exist)
-                    return exist.Find(selectable => selectable.Active);
+                if (SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<ISelectable> existing)
+                    return existing.Find(selectable => selectable.Active);
                 return null;
             }
         }
 
-        public Action Initializer { get; set; }
+        public Action Initializer { get => init; set => initializer = value; }
+        public bool Initialized { get; private set; } = false;
+
         public Viewport() => InputHandler.Viewports.Add(this);
         public Viewport(bool Active)
         {
@@ -105,10 +127,13 @@ namespace ConsoleFramework.Essentials
         public void AddInstance(Instance instance) => instances.Add(instance);
         public void RemoveInstance(Instance instance) => instances.Remove(instance);
 
-        public void Draw()
+        public void Draw(bool clean = false)
         {
-            InitializeInstances();
-            CacheToStack();
+            if (!clean)
+            {
+                InitializeInstances();
+                CacheToStack();
+            }
             Cell cell;
             while (stack.TryPop(out cell))
                 cell.Draw();
@@ -116,8 +141,13 @@ namespace ConsoleFramework.Essentials
 
         public void Clean()
         {
-            cache.ForEach(cell => Push(new Cell(cell.X, cell.Y)));
-            Draw();
+            ClearStack();
+            foreach (Cell cell in cache)
+            {
+                Push(new Cell(cell.X, cell.Y));
+                cell.MemoryLength = -1;
+            }
+            Draw(true);
         }
 
         void InitializeInstances()
@@ -127,5 +157,7 @@ namespace ConsoleFramework.Essentials
             foreach (Instance instance in instances)
                 instance.AddToViewport();
         }
+
+        public override string ToString() => $"V{InputHandler.Viewports.IndexOf(this)} ({Initialized})";
     }
 }

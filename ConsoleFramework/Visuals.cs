@@ -218,18 +218,63 @@ namespace ConsoleFramework
         }
     }
 
-    class Selectable
+    interface ISelectable
     {
-        public Dictionary<ConsoleKey, Action> KeyActionPairs = new Dictionary<ConsoleKey, Action>();
+        public Dictionary<ConsoleKey, Action> KeyActionPairs { get; set; }
 
-        public bool Active = false;
+        public bool Active { get; set; }
+
+        public bool TryAction(ConsoleKey Key);
+    }
+
+    class SelectableTextInstance : TextInstance, ISelectable
+    {
+        bool active = false;
+        Tuple<ConsoleColor, ConsoleColor> defaultColors;
+        public ConsoleColor SelectionForeground;
+        public ConsoleColor SelectionBackground;
+        public SelectableTextInstance(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
+        {
+            defaultColors = Tuple.Create(Foreground, Background);
+            SelectionForeground = Foreground;
+            SelectionBackground = Background;
+            KeyActionPairs[ConsoleKey.Enter] = () =>
+            {
+                Link.Active = true;
+            };
+        }
+
+        public Viewport Link { get; private set; }
+        public bool Active
+        {
+            get => active;
+            set
+            {
+                active = value;
+                if (value)
+                {
+                    Foreground = SelectionForeground;
+                    Background = SelectionBackground;
+                    if (viewport.SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<ISelectable> list)
+                        list.Find(selectable => selectable.Active).Active = false;
+                }
+                else
+                {
+                    Foreground = defaultColors.Item1;
+                    Background = defaultColors.Item2;
+                }
+            }
+        }
+        public Dictionary<ConsoleKey, Action> KeyActionPairs { get; set; } = new Dictionary<ConsoleKey, Action>();
 
         public bool TryAction(ConsoleKey Key)
         {
             Action action;
-            if(KeyActionPairs.TryGetValue(Key, out action))
+            if (KeyActionPairs.TryGetValue(Key, out action))
                 action();
             return action != null;
         }
+
+        public void LinkWindow(Viewport Viewport) => Link = Viewport;
     }
 }
