@@ -68,8 +68,9 @@ namespace ConsoleFramework.Essentials
         void init()
         {
             initializer();
-            foreach (SelectableTextInstance Instance in Instances)
-                Instance.CalculateDistances();
+            foreach (Instance Instance in Instances)
+                if (Instance.GetType() == typeof(SelectableTextInstance))
+                    (Instance as SelectableTextInstance).CalculateDistances();
             Initialized = true;
         }
         Action initializer = () => { };

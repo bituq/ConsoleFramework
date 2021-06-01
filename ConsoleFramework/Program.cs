@@ -9,16 +9,19 @@ namespace ConsoleFramework
         static void Main(string[] args)
         {
             var viewport = new Viewport(true);
-            string[] strings = new string[20];
-            List<SelectableTextList> l = new List<SelectableTextList>();
-            for (int i = 0; i < 20; i++)
+            var button = new SelectableTextInstance(viewport, "Button", 1, 5, ConsoleColor.Yellow);
+            var explanation = new TextInstance(viewport, "Please click the button below.", 1, 3, ConsoleColor.White, ConsoleColor.Black);
+            int number = 0;
+            var counter = new TextInstance(viewport, $"Counter: {number}", 1, 6, ConsoleColor.DarkGray, ConsoleColor.Black);
+            button.KeyActionPairs[ConsoleKey.Enter] = () =>
             {
-                for (int j = 0; j < strings.Length; j++)
-                    strings[j] = ($"0");
-                l.Add(new SelectableTextList(viewport, strings, 1, 1 + i, ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Horizontal }));
-            }
+                number++;
+                counter.Text = $"Counter: {number}";
+            };
 
-            l[5].Items[5].Active = true;
+            button.SelectionBackground = ConsoleColor.DarkRed;
+            button.Active = true;
+
             InputHandler.WaitForInput();
         }
     }

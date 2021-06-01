@@ -90,6 +90,8 @@ namespace ConsoleFramework
                 garbageCollector.Add(cell);
             }
         }
+
+        public override string ToString() => Text;
     }
 
     interface ICollection<T>
@@ -265,7 +267,7 @@ namespace ConsoleFramework
 
     class SelectableTextInstance : TextInstance, ISelectable
     {
-        public Dictionary<TextInstance, float> Distances { get; private set; }
+        public Dictionary<SelectableTextInstance, float> Distances { get; private set; }
         Tuple<ConsoleColor, ConsoleColor> defaultColors;
         public ConsoleColor SelectionForeground;
         public ConsoleColor SelectionBackground;
@@ -278,13 +280,15 @@ namespace ConsoleFramework
             SelectionBackground = Background;
             KeyActionPairs[ConsoleKey.Enter] = () =>
             {
-                Link.Active = true;
+                if (Link != null)
+                    Link.Active = true;
             };
 
-            KeyActionPairs[ConsoleKey.UpArrow] = () => { FindClosest(north).Active = true; };
-            KeyActionPairs[ConsoleKey.RightArrow] = () => { FindClosest(east).Active = true; };
-            KeyActionPairs[ConsoleKey.DownArrow] = () => { FindClosest(south).Active = true; };
-            KeyActionPairs[ConsoleKey.LeftArrow] = () => { FindClosest(west).Active = true; };
+            KeyActionPairs[ConsoleKey.UpArrow] = () => MakeActive(north);
+            KeyActionPairs[ConsoleKey.RightArrow] = () => MakeActive(east);
+            KeyActionPairs[ConsoleKey.DownArrow] = () => MakeActive(south);
+            KeyActionPairs[ConsoleKey.LeftArrow] = () => MakeActive(west);
+
         }
 
         public Viewport Link { get; private set; }
@@ -323,35 +327,40 @@ namespace ConsoleFramework
 
         public void CalculateDistances(bool debug = false)
         {
-            Distances = new Dictionary<TextInstance, float>();
-            foreach (TextInstance Instance in viewport.Instances)
-                if (!Instance.Equals(this))
+            Distances = new Dictionary<SelectableTextInstance, float>();
+            foreach (Instance Instance in viewport.Instances)
+                if (!Instance.Equals(this) && Instance.GetType() == this.GetType())
                 {
-                    float Distance = Calc.Distance(X, Y, Instance.X, Instance.Y);
+                    SelectableTextInstance Selectable = Instance as SelectableTextInstance;
+                    float Distance = Calc.Distance(X, Y, Selectable.X, Selectable.Y);
                     if (Distance < searchRange)
                     {
-                        Distances.Add(Instance, Distance);
+                        Distances.Add(Selectable, Distance);
                         if (debug)
                         {
                             if (Distance >= 30)
-                                Instance.Background = ConsoleColor.DarkBlue;
+                                Selectable.Background = ConsoleColor.DarkBlue;
                             else if (Distance >= 25)
-                                Instance.Background = ConsoleColor.DarkGreen;
+                                Selectable.Background = ConsoleColor.DarkGreen;
                             else if (Distance >= 20)
-                                Instance.Background = ConsoleColor.Green;
+                                Selectable.Background = ConsoleColor.Green;
                             else if (Distance >= 15)
-                                Instance.Background = ConsoleColor.Yellow;
+                                Selectable.Background = ConsoleColor.Yellow;
                             else if (Distance >= 10)
-                                Instance.Background = ConsoleColor.DarkYellow;
+                                Selectable.Background = ConsoleColor.DarkYellow;
                             else if (Distance >= 5)
-                                Instance.Background = ConsoleColor.DarkRed;
+                                Selectable.Background = ConsoleColor.DarkRed;
                             else if (Distance < 5)
-                                Instance.Background = ConsoleColor.Red;
+                                Selectable.Background = ConsoleColor.Red;
                         }
                     }
                 }
         }
 
+        void MakeActive(Func<int, int, int, int, bool> Direction)
+        {
+            if (FindClosest(Direction) is SelectableTextInstance n && n != null) n.Active = true;
+        }
         bool south(int X1, int Y1, int X2, int Y2) => Y2 > Y1;
         bool east(int X1, int Y1, int X2, int Y2) => X2 > X1;
         bool north(int X1, int Y1, int X2, int Y2) => Y2 < Y1;
