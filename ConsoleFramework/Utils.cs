@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Numerics;
 
 namespace ConsoleFramework.Utils
 {
@@ -26,5 +27,10 @@ namespace ConsoleFramework.Utils
     {
         void CacheToStack();
         void StackToCache();
+    }
+
+    static class Calc
+    {
+        public static float Distance(int X1, int Y1, int X2, int Y2) => Vector2.Distance(new Vector2(X1, Y1), new Vector2(X2, Y2));
     }
 }

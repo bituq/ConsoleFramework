@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ConsoleFramework.Essentials;
 using ConsoleFramework.Data;
+using ConsoleFramework.Utils;
 
 namespace ConsoleFramework
 {
@@ -96,20 +97,20 @@ namespace ConsoleFramework
         IReadOnlyList<T> Items { get; }
     }
 
-    class TextList : ICollection<TextInstance>
+    internal class TextInstanceList<T> : ICollection<T> where T : TextInstance
     {
         List<Enum> properties;
         List<string> strings;
-        List<TextInstance> items = new List<TextInstance>();
-        Viewport viewport;
+        protected List<T> items = new List<T>();
+        protected Viewport viewport;
         int spacing = 2;
         int x;
         int y;
         ConsoleColor foreground;
         ConsoleColor background;
-        int len = 0;
+        protected int len = 0;
 
-        public TextList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
+        public TextInstanceList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
         {
             strings = new List<string>(Items);
             properties = new List<Enum>(Properties);
@@ -121,7 +122,7 @@ namespace ConsoleFramework
             set();
         }
 
-        int xIncrement(int index)
+        protected int xIncrement(int index)
         {
             if (properties.Contains(Options.Direction.Horizontal))
             {
@@ -130,9 +131,9 @@ namespace ConsoleFramework
             }
             return x;
         }
-        int yIncrement(int index) => properties.Contains(Options.Direction.Vertical) ? y + (index * spacing) : y;
+        protected int yIncrement(int index) => properties.Contains(Options.Direction.Vertical) ? y + (index * spacing) : y;
 
-        public IReadOnlyList<TextInstance> Items { get => items; }
+        public IReadOnlyList<T> Items { get => items; }
 
         public List<string> Strings
         {
@@ -204,7 +205,17 @@ namespace ConsoleFramework
             }
         }
 
-        void set()
+        protected virtual void set()
+        {
+        }
+    }
+
+    class TextList : TextInstanceList<TextInstance>
+    {
+
+        public TextList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
+            : base(Viewport, Items, X, Y, Foreground, Background, Properties) { }
+        protected override void set()
         {
             foreach (TextInstance item in items)
             {
@@ -212,8 +223,33 @@ namespace ConsoleFramework
                 viewport.RemoveInstance(item);
             }
             items.Clear();
-            for (int i = 0; i < strings.Count; i++)
-                items.Add(new TextInstance(viewport, strings[i], xIncrement(i), yIncrement(i), foreground, background));
+            for (int i = 0; i < Strings.Count; i++)
+                items.Add(new TextInstance(viewport, Strings[i], xIncrement(i), yIncrement(i), Foreground, Background));
+            len = 0;
+        }
+    }
+
+    class SelectableTextList : TextInstanceList<SelectableTextInstance>
+    {
+        public ConsoleColor SelectedForeground = ConsoleColor.Black;
+        public ConsoleColor SelectedBackground = ConsoleColor.White;
+        public SelectableTextList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
+            : base(Viewport, Items, X, Y, Foreground, Background, Properties) { }
+        protected override void set()
+        {
+            foreach (SelectableTextInstance item in items)
+            {
+                item.Clean();
+                viewport.RemoveInstance(item);
+            }
+            items.Clear();
+            for (int i = 0; i < Strings.Count; i++)
+            {
+                var Item = new SelectableTextInstance(viewport, Strings[i], xIncrement(i), yIncrement(i), Foreground, Background);
+                items.Add(Item);
+                Item.SelectionForeground = SelectedForeground;
+                Item.SelectionBackground = SelectedBackground;
+            }
             len = 0;
         }
     }
@@ -229,10 +265,12 @@ namespace ConsoleFramework
 
     class SelectableTextInstance : TextInstance, ISelectable
     {
-        bool active = false;
+        public Dictionary<TextInstance, float> Distances { get; private set; }
         Tuple<ConsoleColor, ConsoleColor> defaultColors;
         public ConsoleColor SelectionForeground;
         public ConsoleColor SelectionBackground;
+        int searchRange = 64;
+        bool active = false;
         public SelectableTextInstance(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
         {
             defaultColors = Tuple.Create(Foreground, Background);
@@ -242,6 +280,11 @@ namespace ConsoleFramework
             {
                 Link.Active = true;
             };
+
+            KeyActionPairs[ConsoleKey.UpArrow] = () => { FindClosest(north).Active = true; };
+            KeyActionPairs[ConsoleKey.RightArrow] = () => { FindClosest(east).Active = true; };
+            KeyActionPairs[ConsoleKey.DownArrow] = () => { FindClosest(south).Active = true; };
+            KeyActionPairs[ConsoleKey.LeftArrow] = () => { FindClosest(west).Active = true; };
         }
 
         public Viewport Link { get; private set; }
@@ -255,8 +298,9 @@ namespace ConsoleFramework
                 {
                     Foreground = SelectionForeground;
                     Background = SelectionBackground;
-                    if (viewport.SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<ISelectable> list)
-                        list.Find(selectable => selectable.Active).Active = false;
+                    if (viewport.ActiveSelectable != null)
+                        viewport.ActiveSelectable.Active = false;
+                    viewport.ActiveSelectable = this;
                 }
                 else
                 {
@@ -276,5 +320,54 @@ namespace ConsoleFramework
         }
 
         public void LinkWindow(Viewport Viewport) => Link = Viewport;
+
+        public void CalculateDistances(bool debug = false)
+        {
+            Distances = new Dictionary<TextInstance, float>();
+            foreach (TextInstance Instance in viewport.Instances)
+                if (!Instance.Equals(this))
+                {
+                    float Distance = Calc.Distance(X, Y, Instance.X, Instance.Y);
+                    if (Distance < searchRange)
+                    {
+                        Distances.Add(Instance, Distance);
+                        if (debug)
+                        {
+                            if (Distance >= 30)
+                                Instance.Background = ConsoleColor.DarkBlue;
+                            else if (Distance >= 25)
+                                Instance.Background = ConsoleColor.DarkGreen;
+                            else if (Distance >= 20)
+                                Instance.Background = ConsoleColor.Green;
+                            else if (Distance >= 15)
+                                Instance.Background = ConsoleColor.Yellow;
+                            else if (Distance >= 10)
+                                Instance.Background = ConsoleColor.DarkYellow;
+                            else if (Distance >= 5)
+                                Instance.Background = ConsoleColor.DarkRed;
+                            else if (Distance < 5)
+                                Instance.Background = ConsoleColor.Red;
+                        }
+                    }
+                }
+        }
+
+        bool south(int X1, int Y1, int X2, int Y2) => Y2 > Y1;
+        bool east(int X1, int Y1, int X2, int Y2) => X2 > X1;
+        bool north(int X1, int Y1, int X2, int Y2) => Y2 < Y1;
+        bool west(int X1, int Y1, int X2, int Y2) => X2 < X1;
+
+        SelectableTextInstance FindClosest(Func<int, int, int, int, bool> f)
+        {
+            double min = double.MaxValue;
+            SelectableTextInstance res = null;
+            foreach (SelectableTextInstance Instance in Distances.Keys)
+                if (f(X, Y, Instance.X, Instance.Y) && Distances[Instance] < min)
+                {
+                    min = Distances[Instance];
+                    res = Instance;
+                }
+            return res;
+        }
     }
 }

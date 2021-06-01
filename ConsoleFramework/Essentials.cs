@@ -1,4 +1,5 @@
 ﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using ConsoleFramework.Data;
@@ -67,18 +68,12 @@ namespace ConsoleFramework.Essentials
         void init()
         {
             initializer();
+            foreach (SelectableTextInstance Instance in Instances)
+                Instance.CalculateDistances();
             Initialized = true;
         }
         Action initializer = () => { };
-        public ISelectable ActiveSelectable
-        {
-            get
-            {
-                if (SelectionOrder.Find(list => list.Exists(selectable => selectable.Active)) is List<ISelectable> existing)
-                    return existing.Find(selectable => selectable.Active);
-                return null;
-            }
-        }
+        public ISelectable ActiveSelectable = null;
 
         public Action Initializer { get => init; set => initializer = value; }
         public bool Initialized { get; private set; } = false;

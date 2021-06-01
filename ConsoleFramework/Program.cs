@@ -9,18 +9,16 @@ namespace ConsoleFramework
         static void Main(string[] args)
         {
             var viewport = new Viewport(true);
-            var viewport2 = new Viewport();
-            var test2 = new SelectableTextInstance(viewport2, "Goodbye, old world!", 1, 4);
-            test2.SelectionBackground = ConsoleColor.Green;
-            test2.Active = true;
-            test2.LinkWindow(viewport);
-            var test = new SelectableTextInstance(viewport, "Hello, world", 1, 1);
-            test.SelectionBackground = ConsoleColor.Red;
-            test.LinkWindow(viewport2);
-            test.Active = true;
+            string[] strings = new string[20];
+            List<SelectableTextList> l = new List<SelectableTextList>();
+            for (int i = 0; i < 20; i++)
+            {
+                for (int j = 0; j < strings.Length; j++)
+                    strings[j] = ($"0");
+                l.Add(new SelectableTextList(viewport, strings, 1, 1 + i, ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Horizontal }));
+            }
 
-            viewport.SelectionOrder.Add(new List<ISelectable> { test });
-            viewport2.SelectionOrder.Add(new List<ISelectable> { test2 });
+            l[5].Items[5].Active = true;
             InputHandler.WaitForInput();
         }
     }
