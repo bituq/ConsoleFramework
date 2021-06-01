@@ -6,11 +6,10 @@ namespace ConsoleFramework.Essentials
 {
     static partial class InputHandler
     {
-        public static List<Enum> Properties = new List<Enum> { Options.DebugModes.ShowDirectionalSelectables };
+        public static List<Enum> Properties = new List<Enum>();
         internal static List<Viewport> Viewports = new List<Viewport>();
         static Viewport defaultDialog = new Viewport();
 
-        public static Action OnInit = () => { };
         static void InitDefaultDialog()
         {
             new TextInstance(defaultDialog, $"There {(Viewports.Count is int c && c == 1 ? "is" : "are")} {c} viewport{(c == 1 ? "" : "s")}, {(c == 1 ? "which is the current one." : "and none are active:")}", 1, 1, ConsoleColor.White, ConsoleColor.Red);
@@ -37,7 +36,6 @@ namespace ConsoleFramework.Essentials
             {
                 if (!activeViewport.Initialized)
                     activeViewport.Initializer();
-                OnInit();
                 foreach (Instance instance in activeViewport.Instances)
                     instance.Update();
                 activeViewport.Draw();
