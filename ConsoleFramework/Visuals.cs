@@ -288,7 +288,6 @@ namespace ConsoleFramework
             KeyActionPairs[ConsoleKey.RightArrow] = () => MakeActive(east);
             KeyActionPairs[ConsoleKey.DownArrow] = () => MakeActive(south);
             KeyActionPairs[ConsoleKey.LeftArrow] = () => MakeActive(west);
-
         }
 
         public Viewport Link { get; private set; }
@@ -359,7 +358,7 @@ namespace ConsoleFramework
 
         void MakeActive(Func<int, int, int, int, bool> Direction)
         {
-            if (FindClosest(Direction) is SelectableTextInstance n && n != null) n.Active = true;
+            if (FindClosest(Direction) is SelectableTextInstance n) n.Active = true;
         }
         bool south(int X1, int Y1, int X2, int Y2) => Y2 > Y1;
         bool east(int X1, int Y1, int X2, int Y2) => X2 > X1;
