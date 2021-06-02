@@ -12,6 +12,7 @@ namespace ConsoleFramework.Essentials
         protected Viewport viewport;
         protected List<Cell> garbageCollector = new List<Cell>();
         protected List<Cell> cache = new List<Cell>();
+        public List<object> Variables = new List<object>();
 
         public Instance(Viewport Viewport)
         {
