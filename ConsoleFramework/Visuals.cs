@@ -273,6 +273,8 @@ namespace ConsoleFramework
         public ConsoleColor SelectionBackground;
         int searchRange = 64;
         bool active = false;
+        public bool Debug = false;
+
         public SelectableTextInstance(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
         {
             defaultColors = Tuple.Create(Foreground, Background);
@@ -324,9 +326,12 @@ namespace ConsoleFramework
 
         public void LinkWindow(Viewport Viewport) => Link = Viewport;
 
-        public void CalculateDistances(bool debug = false)
+        public void CalculateDistances()
         {
+            if (Debug)
+                Update = CalculateDistances;
             Distances = new Dictionary<SelectableTextInstance, float>();
+            float max = int.MinValue;
             foreach (Instance Instance in viewport.Instances)
                 if (!Instance.Equals(this) && Instance.GetType() == this.GetType())
                 {
@@ -334,22 +339,23 @@ namespace ConsoleFramework
                     float Distance = Calc.Distance(X, Y, Selectable.X, Selectable.Y);
                     if (Distance < searchRange)
                     {
+                        max = max < Distance ? Distance : max;
                         Distances.Add(Selectable, Distance);
-                        if (debug)
+                        if (active && Debug)
                         {
-                            if (Distance >= 30)
+                            if (Distance >= max - max / 7)
                                 Selectable.Background = ConsoleColor.DarkBlue;
-                            else if (Distance >= 25)
+                            else if (Distance >= max - max / 3)
                                 Selectable.Background = ConsoleColor.DarkGreen;
-                            else if (Distance >= 20)
+                            else if (Distance >= max - max / 2.5)
                                 Selectable.Background = ConsoleColor.Green;
-                            else if (Distance >= 15)
+                            else if (Distance >= max - max / 2)
                                 Selectable.Background = ConsoleColor.Yellow;
-                            else if (Distance >= 10)
+                            else if (Distance >= max - max / 1.5)
                                 Selectable.Background = ConsoleColor.DarkYellow;
-                            else if (Distance >= 5)
+                            else if (Distance >= max - max / 1.3)
                                 Selectable.Background = ConsoleColor.DarkRed;
-                            else if (Distance < 5)
+                            else if (Distance < max - max / 1.2)
                                 Selectable.Background = ConsoleColor.Red;
                         }
                     }
