@@ -8,20 +8,32 @@ namespace ConsoleFramework
     {
         static void Main(string[] args)
         {
+            Tuple<int, int> pos = new Tuple<int, int>(1, 1);
             var viewport = new Viewport(true);
-            var button = new SelectableTextInstance(viewport, "Button", 1, 5, ConsoleColor.Yellow);
-            var explanation = new TextInstance(viewport, "Please click the button below.", 1, 3, ConsoleColor.White, ConsoleColor.Black);
-            int number = 0;
-            var counter = new TextInstance(viewport, $"Counter: {number}", 1, 6, ConsoleColor.DarkGray, ConsoleColor.Black);
-            button.KeyActionPairs[ConsoleKey.Enter] = () =>
-            {
-                number++;
-                counter.Text = $"Counter: {number}";
-            };
-
-            button.SelectionBackground = ConsoleColor.DarkRed;
-            button.Active = true;
-
+            var matrix = new List<SelectableTextList>();
+            int size = 6;
+            for (int row = 0; row < size; row++)
+                for (int col = 0; col < size; col++)
+                {
+                    var hor = new TextList(viewport, new string[] { "-", "+" }, pos.Item1 + (2 * row), pos.Item2 + 1 + (2 * col), ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Horizontal });
+                    hor.Spacing = 1;
+                    var ver = new TextList(viewport, new string[] { "|", "+", "|" }, pos.Item1 + 1 + (2 * col), pos.Item2 + (2 * row), ConsoleColor.White, ConsoleColor.Black, new Enum[] { Options.Direction.Vertical });
+                    ver.Spacing = 1;
+                    var block = new SelectableTextList(viewport, new string[] { " ", " " }, pos.Item1 + (2 * col), pos.Item2 + (2 * row), ConsoleColor.Yellow, ConsoleColor.Black, new Enum[] { Options.Direction.Vertical });
+                    block.SelectedBackground = ConsoleColor.White;
+                    foreach (SelectableTextInstance item in block.Items)
+                        item.KeyActionPairs[ConsoleKey.Spacebar] = () =>
+                        {
+                            if (item.Text == " ")
+                                item.Text = "0";
+                            else
+                            {
+                                int n = ;
+                                item.Text = 
+                            }
+                        };
+                    matrix.Add(block);
+                }
             InputHandler.WaitForInput();
         }
     }
