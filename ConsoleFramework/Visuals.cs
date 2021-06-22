@@ -272,7 +272,7 @@ namespace ConsoleFramework
         public ConsoleColor SelectionForeground;
         public ConsoleColor SelectionBackground;
         int searchRange = 64;
-        bool active = false;
+        protected bool active = false;
         public bool Debug = false;
 
         public SelectableTextInstance(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
@@ -384,4 +384,59 @@ namespace ConsoleFramework
             return res;
         }
     }
+
+    class SelectableTextInput : SelectableTextInstance
+    {
+        public SelectableTextInput(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
+        {
+            Action RemoveEnd = () =>
+            {
+                base.Text = base.Text.Substring(0, Math.Max(0, base.Text.Length - 1));
+                SetCursorPosition();
+            };
+            base.Update = () =>
+            {
+                if (active)
+                    switch (InputHandler.KeyPressed.Key)
+                    {
+                        case 0:
+                            break;
+                        case ConsoleKey.Delete:
+                            RemoveEnd();
+                            break;
+                        case ConsoleKey.Backspace:
+                            RemoveEnd();
+                            break;
+                        default:
+                            base.Text += InputHandler.KeyPressed.KeyChar;
+                            SetCursorPosition();
+                            break;
+                    }
+            };
+        }
+
+        private void SetCursorPosition() => InputHandler.FinalCursorPosition = Tuple.Create(X + base.Text.Length, Y);
+
+        public new bool Active
+        {
+            get => active;
+            set
+            {
+                active = value;
+                if (value)
+                {
+                    InputHandler.FinalCursorPosition = Tuple.Create(X + base.Text.Length, Y);
+                    if (viewport?.ActiveSelectable != null)
+                        viewport.ActiveSelectable.Active = false;
+                    viewport.ActiveSelectable = this;
+                    Console.CursorVisible = true;
+                }
+                else
+                {
+                    Console.CursorVisible = false;
+                }
+            }
+        }
+    }
+
 }

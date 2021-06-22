@@ -9,6 +9,8 @@ namespace ConsoleFramework.Essentials
         public static List<Enum> Properties = new List<Enum> { Options.DebugModes.ShowDirectionalSelectables };
         internal static List<Viewport> Viewports = new List<Viewport>();
         static Viewport defaultDialog = new Viewport();
+        public static Tuple<int, int> FinalCursorPosition = Tuple.Create(0, 0);
+        public static ConsoleKeyInfo KeyPressed;
 
         public static Action OnInit = () => { };
         static void InitDefaultDialog()
@@ -32,7 +34,6 @@ namespace ConsoleFramework.Essentials
 
         public static void WaitForInput()
         {
-            Console.CursorVisible = false;
             while (Viewports.Find(v => v.Active) is Viewport activeViewport)
             {
                 if (!activeViewport.Initialized)
@@ -41,8 +42,9 @@ namespace ConsoleFramework.Essentials
                 foreach (Instance instance in activeViewport.Instances)
                     instance.Update();
                 activeViewport.Draw();
-                ConsoleKeyInfo Key = Console.ReadKey(true);
-                activeViewport?.ActiveSelectable?.TryAction(Key.Key);
+                Console.SetCursorPosition(FinalCursorPosition.Item1, FinalCursorPosition.Item2);
+                KeyPressed = Console.ReadKey(true);
+                activeViewport?.ActiveSelectable?.TryAction(KeyPressed.Key);
             }
             defaultDialog.Draw();
             Console.SetCursorPosition(0, 3 + Viewports.Count);
