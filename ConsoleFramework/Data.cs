@@ -34,7 +34,7 @@ namespace ConsoleFramework.Data
         public char Character;
         public int X { get => x; set => x = Math.Min(value, Console.BufferWidth - 1); }
         public int Y;
-        public int MemoryLength = 0;
+        public int Age = 0;
 
         public void Draw()
         {
@@ -49,7 +49,7 @@ namespace ConsoleFramework.Data
             Foreground = defaultForeground;
             Background = defaultBackground;
             Character = ' ';
-            MemoryLength = 0;
+            Age = 0;
         }
 
         public bool PositionEquals(Cell cell) => X == cell.X && Y == cell.Y;

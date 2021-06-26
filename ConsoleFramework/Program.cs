@@ -13,7 +13,7 @@ namespace ConsoleFramework
             v.Initializer = () =>
             {
                 var h = new SelectableTextInput(v, "hello", 1, 1);
-                new SelectableTextInput(v, "bye", 1, 2);
+                h.Width = 20;
                 var e = new SelectableTextInstance(v, "Button", 1, 3);
                 e.SelectionBackground = ConsoleColor.Red;
                 h.Active = true;

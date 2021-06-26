@@ -18,11 +18,15 @@ namespace ConsoleFramework
 
     public class TextInstance : Instance, IText
     {
-        string text;
+        string text = "";
         int x;
         int y;
         ConsoleColor foreground = ConsoleColor.White;
         ConsoleColor background = ConsoleColor.Black;
+        int width;
+        int height;
+        protected int line = 1;
+        protected int offset = 0;
 
         public TextInstance(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground, ConsoleColor Background) : base(Viewport)
         {
@@ -30,6 +34,8 @@ namespace ConsoleFramework
             y = Y;
             foreground = Foreground;
             background = Background;
+            Width = Console.BufferWidth;
+            Height = 2;
             this.Text = Text;
         }
         public TextInstance(Viewport Viewport, string Text, int X, int Y) : base(Viewport)
@@ -44,12 +50,55 @@ namespace ConsoleFramework
             get => text;
             set
             {
-                Clean();
+                if (value.Length < Text.Length)
+                    Clean();
+                line = 1;
+                offset = 0;
+                string res = "";
                 for (int i = 0; i < value.Length; i++)
-                    AddToCache(new Cell(value[i], x + i, y, foreground, background));
-                text = value;
+                {
+                    if (offset == Width)
+                        if (line == height)
+                        {
+                            for (int j = 0; j < 3; j++)
+                                AddToCache(new Cell('.', x + offset - j - 1, y + line - 1, foreground, background));
+                            res += " ";
+                            break;
+                        }
+                        else
+                        {
+                            offset = 0;
+                            line++;
+                        }
+                    AddToCache(new Cell(value[i], x + offset, y + line - 1, foreground, background));
+                    res += value[i];
+                    offset++;
+                }
+                text = res;
             }
         }
+
+        public int Width
+        {
+            get => width;
+            set
+            {
+                width = Math.Min(value, Console.BufferWidth - X);
+                Text = text;
+            }
+        }
+
+        public int Height
+        {
+            get => height;
+            set
+            {
+                height = value;
+                Text = text;
+            }
+        }
+
+        public int Lines { get => Text.Split('\n').Length; }
 
         public int X
         {
@@ -476,7 +525,7 @@ namespace ConsoleFramework
                     }
             };
         }
-        private void SetCursorPosition() => InputHandler.FinalCursorPosition = Tuple.Create(X + base.Text.Length, Y);
+        private void SetCursorPosition() => InputHandler.FinalCursorPosition = Tuple.Create(X + (offset == Width && line != Height ? 0 : offset), Y + (offset == Width && line != Height ? line : line - 1));
     }
 
 }

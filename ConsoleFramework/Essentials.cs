@@ -27,9 +27,10 @@ namespace ConsoleFramework.Essentials
         }
         public void AddToCache(Cell cell)
         {
-            if (cache.Exists(other => other.PositionEquals(cell)))
-                RemoveFromCache(cache.Find(other => other.PositionEquals(cell)));
-            cache.Add(cell);
+            if (cache.Exists(other => cell.PositionEquals(other) && cell != other))
+                RemoveFromCache(cache.Find(other => other.PositionEquals(cell) && cell != other));
+            if (!cache.Exists(other => other == cell))
+                cache.Add(cell);
         }
         public void ClearCache() => cache.Clear();
         public void RemoveFromCache(Cell cell) => cache.Remove(cell);
@@ -102,14 +103,14 @@ namespace ConsoleFramework.Essentials
         public void CacheToStack()
         {
             PushRange(cache);
-            cache.ForEach(cell => cell.MemoryLength++);
+            cache.ForEach(cell => cell.Age++);
         }
         public void ClearCache() => cache.Clear();
         public void ClearStack() => stack.Clear();
         public Cell Peek() => stack.Peek();
         public void Push(Cell cell)
         {
-            if (!stack.Contains(cell) && cell.MemoryLength < 1)
+            if (!stack.Contains(cell) && cell.Age < 1)
                 stack.Push(cell);
         }
         public void PushRange(IEnumerable<Cell> range)
@@ -140,7 +141,7 @@ namespace ConsoleFramework.Essentials
             foreach (Cell cell in cache)
             {
                 Push(new Cell(cell.X, cell.Y));
-                cell.MemoryLength = -1;
+                cell.Age = -1;
             }
             Draw(true);
         }
