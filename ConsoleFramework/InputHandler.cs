@@ -34,6 +34,8 @@ namespace ConsoleFramework.Essentials
 
         public static void WaitForInput()
         {
+            Console.CursorVisible = false;
+            Init();
             while (Viewports.Find(v => v.Active) is Viewport activeViewport)
             {
                 if (!activeViewport.Initialized)
@@ -42,7 +44,7 @@ namespace ConsoleFramework.Essentials
                 foreach (Instance instance in activeViewport.Instances)
                     instance.Update();
                 activeViewport.Draw();
-                Console.SetCursorPosition(FinalCursorPosition.Item1, FinalCursorPosition.Item2);
+                Console.SetCursorPosition(Math.Min(FinalCursorPosition.Item1, Console.BufferWidth - 1), FinalCursorPosition.Item2);
                 KeyPressed = Console.ReadKey(true);
                 activeViewport?.ActiveSelectable?.TryAction(KeyPressed.Key);
             }

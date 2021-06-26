@@ -7,7 +7,16 @@ using ConsoleFramework.Utils;
 
 namespace ConsoleFramework
 {
-    class TextInstance : Instance
+    public interface IText
+    {
+        public string Text { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public ConsoleColor Foreground { get; set; }
+        public ConsoleColor Background { get; set; }
+    }
+
+    public class TextInstance : Instance, IText
     {
         string text;
         int x;
@@ -94,12 +103,14 @@ namespace ConsoleFramework
         public override string ToString() => Text;
     }
 
-    interface ICollection<T>
+    public interface ICollection<T>
     { 
         IReadOnlyList<T> Items { get; }
     }
 
-    internal class TextInstanceList<T> : ICollection<T> where T : TextInstance
+
+
+    public class TextInstanceList<T> : ICollection<T> where T : IText
     {
         List<Enum> properties;
         List<string> strings;
@@ -122,6 +133,12 @@ namespace ConsoleFramework
             foreground = Foreground;
             background = Background;
             set();
+        }
+
+        public T this[int index]
+        {
+            get => items[index];
+            set => items[index] = value;
         }
 
         protected int xIncrement(int index)
@@ -212,7 +229,7 @@ namespace ConsoleFramework
         }
     }
 
-    class TextList : TextInstanceList<TextInstance>
+    public class TextList : TextInstanceList<TextInstance>
     {
 
         public TextList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
@@ -231,7 +248,7 @@ namespace ConsoleFramework
         }
     }
 
-    class SelectableTextList : TextInstanceList<SelectableTextInstance>
+    public class SelectableTextList : TextInstanceList<SelectableTextInstance>
     {
         public ConsoleColor SelectedForeground = ConsoleColor.Black;
         public ConsoleColor SelectedBackground = ConsoleColor.White;
@@ -256,16 +273,43 @@ namespace ConsoleFramework
         }
     }
 
-    interface ISelectable
+    public class TextInputList : TextInstanceList<SelectableTextInput>
+    {
+        public ConsoleColor SelectedForeground = ConsoleColor.Black;
+        public ConsoleColor SelectedBackground = ConsoleColor.White;
+        public TextInputList(Viewport Viewport, string[] Items, int X, int Y, ConsoleColor Foreground, ConsoleColor Background, IEnumerable<Enum> Properties)
+            : base(Viewport, Items, X, Y, Foreground, Background, Properties) { }
+        protected override void set()
+        {
+            foreach (SelectableTextInput item in items)
+            {
+                item.Clean();
+                viewport.RemoveInstance(item);
+            }
+            items.Clear();
+            for (int i = 0; i < Strings.Count; i++)
+            {
+                var Item = new SelectableTextInput(viewport, Strings[i], xIncrement(i), yIncrement(i), Foreground, Background);
+                items.Add(Item);
+                Item.SelectionForeground = SelectedForeground;
+                Item.SelectionBackground = SelectedBackground;
+            }
+            len = 0;
+        }
+    }
+
+    public interface ISelectable
     {
         public Dictionary<ConsoleKey, Action> KeyActionPairs { get; set; }
 
         public bool Active { get; set; }
 
         public bool TryAction(ConsoleKey Key);
+
+        public void CalculateDistances();
     }
 
-    class SelectableTextInstance : TextInstance, ISelectable
+    public class SelectableTextInstance : TextInstance, ISelectable
     {
         public Dictionary<SelectableTextInstance, float> Distances { get; private set; }
         Tuple<ConsoleColor, ConsoleColor> defaultColors;
@@ -306,14 +350,19 @@ namespace ConsoleFramework
                     if (viewport.ActiveSelectable != null)
                         viewport.ActiveSelectable.Active = false;
                     viewport.ActiveSelectable = this;
+                    OnActive();
                 }
                 else
                 {
                     Foreground = defaultColors.Item1;
                     Background = defaultColors.Item2;
+                    OnInactive();
                 }
             }
         }
+
+        protected Action OnActive = () => { };
+        protected Action OnInactive = () => { };
         public Dictionary<ConsoleKey, Action> KeyActionPairs { get; set; } = new Dictionary<ConsoleKey, Action>();
 
         public bool TryAction(ConsoleKey Key)
@@ -333,7 +382,7 @@ namespace ConsoleFramework
             Distances = new Dictionary<SelectableTextInstance, float>();
             float max = int.MinValue;
             foreach (Instance Instance in viewport.Instances)
-                if (!Instance.Equals(this) && Instance.GetType() == this.GetType())
+                if (!Instance.Equals(this) && Instance is ISelectable)
                 {
                     SelectableTextInstance Selectable = Instance as SelectableTextInstance;
                     float Distance = Calc.Distance(X, Y, Selectable.X, Selectable.Y);
@@ -385,7 +434,7 @@ namespace ConsoleFramework
         }
     }
 
-    class SelectableTextInput : SelectableTextInstance
+    public class SelectableTextInput : SelectableTextInstance
     {
         public SelectableTextInput(Viewport Viewport, string Text, int X, int Y, ConsoleColor Foreground = ConsoleColor.White, ConsoleColor Background = ConsoleColor.Black) : base(Viewport, Text, X, Y, Foreground, Background)
         {
@@ -394,12 +443,25 @@ namespace ConsoleFramework
                 base.Text = base.Text.Substring(0, Math.Max(0, base.Text.Length - 1));
                 SetCursorPosition();
             };
+            OnActive = () => {
+                Console.CursorVisible = true;
+                SetCursorPosition();
+            };
+            OnInactive = () => { Console.CursorVisible = false; };
             base.Update = () =>
             {
                 if (active)
                     switch (InputHandler.KeyPressed.Key)
                     {
                         case 0:
+                            break;
+                        case ConsoleKey.UpArrow:
+                            break;
+                        case ConsoleKey.DownArrow:
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            break;
+                        case ConsoleKey.RightArrow:
                             break;
                         case ConsoleKey.Delete:
                             RemoveEnd();
@@ -414,29 +476,7 @@ namespace ConsoleFramework
                     }
             };
         }
-
         private void SetCursorPosition() => InputHandler.FinalCursorPosition = Tuple.Create(X + base.Text.Length, Y);
-
-        public new bool Active
-        {
-            get => active;
-            set
-            {
-                active = value;
-                if (value)
-                {
-                    InputHandler.FinalCursorPosition = Tuple.Create(X + base.Text.Length, Y);
-                    if (viewport?.ActiveSelectable != null)
-                        viewport.ActiveSelectable.Active = false;
-                    viewport.ActiveSelectable = this;
-                    Console.CursorVisible = true;
-                }
-                else
-                {
-                    Console.CursorVisible = false;
-                }
-            }
-        }
     }
 
 }

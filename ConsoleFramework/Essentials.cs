@@ -1,13 +1,11 @@
 ﻿using System;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using ConsoleFramework.Data;
 using ConsoleFramework.Utils;
 
 namespace ConsoleFramework.Essentials
 {
-    class Instance : ICacheImplementation<Cell>
+    public class Instance : ICacheImplementation<Cell>
     {
         protected Viewport viewport;
         protected List<Cell> garbageCollector = new List<Cell>();
@@ -45,7 +43,7 @@ namespace ConsoleFramework.Essentials
         }
     }
 
-    class Viewport : IStackImplementation<Cell>, ICacheImplementation<Cell>, ICacheStackAdapter
+    public class Viewport : IStackImplementation<Cell>, ICacheImplementation<Cell>, ICacheStackAdapter
     {
         internal List<Cell> garbageCollector = new List<Cell>();
         List<Instance> instances = new List<Instance>();
@@ -70,8 +68,8 @@ namespace ConsoleFramework.Essentials
         {
             initializer();
             foreach (Instance Instance in Instances)
-                if (Instance.GetType() == typeof(SelectableTextInstance))
-                    (Instance as SelectableTextInstance).CalculateDistances();
+                if (Instance is ISelectable)
+                    (Instance as ISelectable).CalculateDistances();
             Initialized = true;
         }
         Action initializer = () => { };

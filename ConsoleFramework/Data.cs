@@ -5,8 +5,10 @@ using System.Numerics;
 
 namespace ConsoleFramework.Data
 {
-    class Cell
+    public class Cell
     {
+        private int x;
+
         ConsoleColor defaultForeground => ConsoleColor.White;
         ConsoleColor defaultBackground => ConsoleColor.Black;
 
@@ -30,7 +32,7 @@ namespace ConsoleFramework.Data
         public ConsoleColor Foreground;
         public ConsoleColor Background;
         public char Character;
-        public int X;
+        public int X { get => x; set => x = Math.Min(value, Console.BufferWidth - 1); }
         public int Y;
         public int MemoryLength = 0;
 
